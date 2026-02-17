@@ -11,6 +11,7 @@ from selenium import webdriver
 
 from dotenv import load_dotenv # type: ignore
 import os
+import re
 
 class CalendarScraper:
     def __init__(self):
@@ -63,7 +64,7 @@ class CalendarScraper:
             EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[role="dialog"], div[role="region"]'))
         )
         
-        # After popup opens -> try getting title & desc
+        # After popup opens -> try getting title & time/date & desc
         try:
             title = WebDriverWait(popup, 3).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'span[aria-label="Title"]'))
@@ -72,15 +73,28 @@ class CalendarScraper:
             title = ""
         
         try:
+            date = WebDriverWait(popup, 3).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="WWT_Z"]'))
+            ).text.strip()
+        except TimeoutException:
+            date = ""
+
+        try:
             desc= WebDriverWait(popup, 3).until( 
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'div[visibility="hidden"]')) 
             ).text.strip()
+
+            meet_url_base = r"https://teams\.microsoft\.com/meet\S+"
+            match = re.search(meet_url_base, desc)
+
+            if match: meet_link = match.group(0)
+
         except TimeoutException:
-            desc = ""    
+            meet_link = ""    
 
 
         driver.switch_to.active_element.send_keys(Keys.ESCAPE)
-        return title, desc
+        return title, date, meet_link
 
 
     def run(self):
