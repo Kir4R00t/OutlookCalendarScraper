@@ -1,17 +1,16 @@
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import StaleElementReferenceException
-from selenium.common.exceptions import StaleElementReferenceException
-
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By, Keys
+from selenium.common.exceptions import (
+    StaleElementReferenceException, 
+    TimeoutException
+)
 from selenium import webdriver
-
-from dotenv import load_dotenv # type: ignore
+from dotenv import load_dotenv
 import os
 import re
+
 
 class CalendarScraper:
     def __init__(self):
@@ -64,7 +63,7 @@ class CalendarScraper:
             EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[role="dialog"], div[role="region"]'))
         )
         
-        # After popup opens -> try getting title & time/date & desc
+        # Get title
         try:
             title = WebDriverWait(popup, 3).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'span[aria-label="Title"]'))
@@ -72,13 +71,15 @@ class CalendarScraper:
         except TimeoutException:
             title = ""
         
+        # Get date
         try:
             date = WebDriverWait(popup, 3).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="WWT_Z"]'))
             ).text.strip()
         except TimeoutException:
             date = ""
-
+        
+        # Get meet link
         try:
             desc= WebDriverWait(popup, 3).until( 
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'div[visibility="hidden"]')) 
@@ -86,9 +87,7 @@ class CalendarScraper:
 
             meet_url_base = r"https://teams\.microsoft\.com/meet\S+"
             match = re.search(meet_url_base, desc)
-
             if match: meet_link = match.group(0)
-
         except TimeoutException:
             meet_link = ""    
 
@@ -99,11 +98,10 @@ class CalendarScraper:
 
     def run(self):
         driver = self.init_driver()
-        driver.get(self.url)
-        
+        driver.get(self.url)        
         events = self.find_all_events(driver)
         
-        parsed_events = [] # TODO: parse events here -> extract links
+        parsed_events = []
         for event in events:
             parsed_events.append(self.get_event_data(driver, event))
 
