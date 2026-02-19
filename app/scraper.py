@@ -8,15 +8,12 @@ from selenium.common.exceptions import (
     TimeoutException
 )
 from selenium import webdriver
-from dotenv import load_dotenv
-import os
 import re
 
 
 class CalendarScraper:
-    def __init__(self):
-        load_dotenv(".env")
-        self.url = os.getenv('CALENDAR_URL')
+    def __init__(self, url):
+        self.url = url
 
     def init_driver(self) -> webdriver:        
         options = Options()
@@ -117,20 +114,14 @@ class CalendarScraper:
 
         return event_data
 
-    def run(self) -> None:
+    def run(self) -> list:
         driver = self.init_driver()
-        driver.get(self.url)        
+        driver.get(self.url)
         events = self.find_all_events(driver)
         
         parsed_events = []
         for event in events:
             parsed_events.append(self.get_event_data(driver, event))
 
-        for e in parsed_events:
-            print(e)
-        
-        driver.quit()
-
-if __name__ == "__main__":
-    scraper = CalendarScraper()
-    scraper.run()
+        print(parsed_events)
+        return parsed_events

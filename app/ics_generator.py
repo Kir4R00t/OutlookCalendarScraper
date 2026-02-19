@@ -1,5 +1,6 @@
-from ics import Calendar, Event
-from app import util
+from icalendar import Calendar, Event
+
+from util import Util
 
 class IcsGenerator:
     def __init__(self):
@@ -8,13 +9,17 @@ class IcsGenerator:
     def create_event(self, title, date, desc) -> None:
         e = Event()
 
-        ics_compatible_date = util.format_date(date)
+        ics_compatible_date = Util.format_date(date)
         event_start_date = ics_compatible_date[0]
         event_end_date   = ics_compatible_date[1]
         
-        e.name          = title
-        e.begin         = event_start_date
-        e.end           = event_end_date 
-        e.description   = desc # Either meet link or the classroom nr
+        e.add("summary", title)
+        e.add("description", desc)
+        e.add("dtstart", event_start_date)
+        e.add("dtend", event_end_date)
         
-        self.calendar.events.add(e)
+        self.calendar.add_component(e)
+
+        with open("output.ics", "wb") as f:
+            f.write(self.calendar.to_ical())
+
