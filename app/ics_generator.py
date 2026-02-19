@@ -1,5 +1,5 @@
 from ics import Calendar, Event
-from util import format_date
+from app import util
 
 class IcsGenerator:
     def __init__(self):
@@ -8,7 +8,7 @@ class IcsGenerator:
     def create_event(self, title, date, desc) -> None:
         e = Event()
 
-        ics_compatible_date = format_date(date)
+        ics_compatible_date = util.format_date(date)
         event_start_date = ics_compatible_date[0]
         event_end_date   = ics_compatible_date[1]
         
