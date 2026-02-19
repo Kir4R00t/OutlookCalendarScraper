@@ -66,7 +66,7 @@ class CalendarScraper:
         
         # Get title
         try:
-            title = WebDriverWait(popup, 3).until(
+            title = WebDriverWait(popup, 5).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'span[aria-label="Title"]'))
             ).text.strip()
         except TimeoutException:
@@ -74,7 +74,7 @@ class CalendarScraper:
         
         # Get date
         try:
-            date = WebDriverWait(popup, 3).until(
+            date = WebDriverWait(popup, 5).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="WWT_Z"]'))
             ).text.strip()
         except TimeoutException:
@@ -82,20 +82,40 @@ class CalendarScraper:
         
         # Get meet link
         try:
-            desc= WebDriverWait(popup, 3).until( 
+            desc= WebDriverWait(popup, 5).until( 
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'div[visibility="hidden"]')) 
-            ).text.strip()
+            )
+            desc = (desc.get_attribute("textContent") or "").strip()
 
-            meet_url_base = r"https://teams\.microsoft\.com/meet\S+"
+            meet_url_base = r"https://teams\.microsoft\.com/meet/\S+"
+
             match = re.search(meet_url_base, desc)
             if match: meet_link = match.group(0)
+
+        # Since there is no meet link -> Get location
         except TimeoutException:
-            meet_link = ""    
+            meet_link = None
 
+            try:
+                loc = WebDriverWait(popup, 5).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, 'span[class="QI7ov"]'))
+                ).text.strip()
+            
+                classroom_pattern = r"Sala:\s*\d+"
+                match = re.search(classroom_pattern, loc)
+                if match: classroom = match.group(0)
 
-        driver.switch_to.active_element.send_keys(Keys.ESCAPE)
-        return title, date, meet_link
+            except TimeoutException:
+                classroom = ""
 
+        driver.switch_to.active_element.send_keys(Keys.ESCAPE) # close popup
+
+        # Mark events as Remote or OnSite classes
+        event_data = []
+        if meet_link:   event_data  = ["[Remote]" + title, date, meet_link]
+        else:   event_data          = ["[OnSite]" + title, date, classroom] 
+
+        return event_data
 
     def run(self):
         driver = self.init_driver()
