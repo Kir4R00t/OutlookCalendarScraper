@@ -40,16 +40,16 @@ class CalendarScraper:
         )
         return driver
 
+
     # TODO: finds all events but in the current month
     #       Need to click to like +3months ahead
-
-    def find_all_events(self, driver, timeout: int = 10 ):
+    def find_all_events(self, driver, timeout: int = 10 ) -> webdriver:
         wait = WebDriverWait(driver, timeout)
         wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[data-itemindex]")))
         
         return driver.find_elements(By.CSS_SELECTOR, "div[data-itemindex]")
-    
-    def get_event_data(self, driver, event, timeout: int = 10):
+
+    def get_event_data(self, driver, event, timeout: int = 10) -> str:
         wait = WebDriverWait(driver, timeout)
 
         # Try clicking on an event
@@ -117,7 +117,7 @@ class CalendarScraper:
 
         return event_data
 
-    def run(self):
+    def run(self) -> None:
         driver = self.init_driver()
         driver.get(self.url)        
         events = self.find_all_events(driver)
