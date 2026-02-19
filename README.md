@@ -3,7 +3,7 @@ Synchronize a Microsoft Outlook / Teams university calendar with Google Calendar
 
 This project was created to solve a real-world limitation: university Outlook calendars (published via Microsoft 365 / Teams) often cannot be directly subscribed to in Google Calendar due to permission or authentication restrictions.
 
-## Architecture
+## Architecture / App flow
 ```
   Outlook / Teams Calendar
             │
@@ -21,7 +21,6 @@ This project was created to solve a real-world limitation: university Outlook ca
             │
             ▼
  Google Calendar (Subscribe via URL)
-
 ```
 
 ## Tech stack
