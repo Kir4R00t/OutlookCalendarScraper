@@ -1,4 +1,5 @@
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -8,8 +9,13 @@ from selenium.common.exceptions import (
     TimeoutException
 )
 from selenium import webdriver
+import logging
 import re
 
+from time import sleep
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class CalendarScraper:
     def __init__(self, url):
@@ -20,7 +26,7 @@ class CalendarScraper:
         options.add_argument('--headless=new')
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--window-size=2560,1440")
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--disable-gpu")
         options.add_argument("--disable-extensions")
@@ -37,14 +43,6 @@ class CalendarScraper:
         )
         return driver
 
-
-    # TODO: finds all events but in the current month
-    #       Need to click to like +3months ahead
-    def find_all_events(self, driver, timeout: int = 10 ) -> webdriver:
-        wait = WebDriverWait(driver, timeout)
-        wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[data-itemindex]")))
-        
-        return driver.find_elements(By.CSS_SELECTOR, "div[data-itemindex]")
 
     def get_event_data(self, driver, event, timeout: int = 10) -> str:
         wait = WebDriverWait(driver, timeout)
@@ -109,19 +107,42 @@ class CalendarScraper:
 
         # Mark events as Remote or OnSite classes
         event_data = []
-        if meet_link:   event_data  = ["[Remote]" + title, date, meet_link]
-        else:   event_data          = ["[OnSite]" + title, date, classroom] 
+        if meet_link:   event_data  = ["[Remote] " + title, date, meet_link]
+        else:   event_data          = ["[OnSite] " + title, date, classroom] 
 
+        logger.info(f"Event scraped: {event_data}")
         return event_data
 
+    def parse_all_events(self, driver, timeout: int = 10 ) -> list[WebElement]:
+        event_locator   = "div[data-itemindex]"
+        button_locator  = 'i[data-icon-name="Down"]'
+
+        wait = WebDriverWait(driver, timeout)
+        wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, event_locator)))
+        
+        parsed_events_data = []
+
+        # Initial collection
+        events = driver.find_elements(By.CSS_SELECTOR, event_locator)
+        for event in events:
+            parsed_events_data.append(self.get_event_data(driver, event))
+
+        # Collect 3 months ahead
+        for i in range(3):
+            driver.find_element(By.CSS_SELECTOR, button_locator).click()
+            sleep(10) # TODO: This is just a temporary solution -> wait for old elements to become 'stale' ?
+            events = driver.find_elements(By.CSS_SELECTOR, event_locator)
+            for event in events:
+                parsed_events_data.append(self.get_event_data(driver, event))
+
+
+        return parsed_events_data
+    
+    
     def run(self) -> list:
         driver = self.init_driver()
         driver.get(self.url)
-        events = self.find_all_events(driver)
         
-        parsed_events = []
-        for event in events:
-            parsed_events.append(self.get_event_data(driver, event))
+        parsed_events = self.parse_all_events(driver)
 
-        print(parsed_events)
         return parsed_events
