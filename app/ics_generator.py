@@ -20,6 +20,6 @@ class IcsGenerator:
         
         self.calendar.add_component(e)
 
-        with open("output.ics", "wb") as f:
+        with open("outlook.ics", "wb") as f:
             f.write(self.calendar.to_ical())
 

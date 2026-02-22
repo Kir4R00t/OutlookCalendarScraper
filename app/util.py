@@ -14,3 +14,8 @@ class Util:
 
         return event_start, event_end
     
+    @staticmethod
+    def timestamp() -> str:
+        ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+        return ts

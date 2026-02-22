@@ -1,1 +1,13 @@
-# TODO
+services:
+  scraper:
+    build: .
+    container_name: outlook_calendar_scraper
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - OUTLOOK_URL=${OUTLOOK_URL}
+      - TZ=Europe/Warsaw
+    volumes:
+      - ./outlook.ics:/outlook_calendar_scraper/outlook.ics
+    shm_size: "2gb"

@@ -1,9 +1,13 @@
 from dotenv import load_dotenv
+import logging
 import os
 
 from scraper import CalendarScraper
 from ics_generator import IcsGenerator
+from util import Util
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class App:
     def __init__(self):
@@ -25,4 +29,4 @@ class App:
 if __name__ == "__main__":
     app = App()
     app.runApp()
-    print("Scraping complete :)")
+    logger.info(f"[{Util.timestamp()}] - Scraping finished :)")
