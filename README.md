@@ -25,13 +25,32 @@ This project was created to solve a real-world limitation: university Outlook ca
 
 ## Tech stack
 - Python + Selenium
-- Docker
-- Flask
+- Docker / Docker compose
+- Nginx (serving the calendar)
 - VPS (running debian)
 - Google Calendar (ICS subscription)
 
-## Now working on ...
-- ICS Generator
-- Containerization
-- Setting up the Web Endpoint
-- Finishing up the docs (deployment guide, setting up envs etc.)
+## Setting up dev env
+
+### Clone repo
+```
+git clone https://github.com/Kir4R00t/OutlookCalendarScraper
+cd OutlookCalendarScraper
+```
+
+### Create enviornment file
+```
+nano .env
+CALENDAR_URL=https://your-outlook-calendar-url
+```
+
+### Start services
+```
+sudo docker compose up --build -d
+```
+
+### Access the calendar
+Now you can subscribe to your outlook calendar in Google by pasting in this link 
+```
+http://your-server-ip:8080/outlook.ics
+```

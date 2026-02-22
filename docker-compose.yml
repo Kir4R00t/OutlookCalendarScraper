@@ -11,3 +11,12 @@ services:
     volumes:
       - ./outlook.ics:/outlook_calendar_scraper/outlook.ics
     shm_size: "2gb"
+
+  web:
+    image: nginx:alpine
+    container_name: calendar_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./outlook.ics:/usr/share/nginx/html/outlook.ics:ro
